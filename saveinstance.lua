@@ -3562,51 +3562,60 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 		end
 	end
 
-	local function save_game()
-    -- FIND THE START OF THE MAIN FUNCTION
-local function synsaveinstance(Options)
-    Options = Options or {}
+	-- LOCATION: In the saveinstance.lua file, find the save_game() function
+-- REPLACE the section starting with "local function save_game()" with this:
 
-    -- [[ ABSOLUTE PURGE: TRIGGERED BEFORE ANYTHING ELSE ]]
-    if Options.noscripts then
-        warn("!!!")
-        
-        -- 1. Wipe the "Protected" containers where Roblox hides default scripts
-        local protected = {
-            game:GetService("Chat"),
-            game:GetService("StarterGui"),
-            game:GetService("StarterPlayer"),
-            game:GetService("SoundService"),
-            game:GetService("ReplicatedFirst")
-        }
-        
-        for _, service in pairs(protected) do
-            pcall(function()
-                for _, child in pairs(service:GetChildren()) do
-                    if child:IsA("LuaSourceContainer") or child:IsA("Folder") then
-                        child:Destroy()
-                    end
-                end
-            end)
-        end
+local function save_game()
+	-- FIX: Check noscripts BEFORE anything else and physically remove scripts
+	if OPTIONS.noscripts then
+		print("noscripts: true detected. Physically purging all script objects...")
+		
+		-- 1. Override getscriptbytecode so even recovered scripts have no content
+		local original_getscriptbytecode = getscriptbytecode
+		getscriptbytecode = function() return "" end
+		
+		-- 2. Physically destroy all LuaSourceContainer objects (Scripts, LocalScripts, ModuleScripts)
+		local script_list = {}
+		for _, v in pairs(game:GetDescendants()) do
+			if v:IsA("LuaSourceContainer") then
+				table.insert(script_list, v)
+			end
+		end
+		
+		for _, script in ipairs(script_list) do
+			pcall(function() 
+				script:Destroy() 
+			end)
+		end
+		
+		-- 3. Force related options to false
+		OPTIONS.Decompile = false
+		OPTIONS.SaveBytecode = false
+		OPTIONS.scriptcache = false
+		ScriptCache = false
+		
+		print("✓ All scripts destroyed before saveinstance processing")
+	end
 
-        -- 2. Global purge of every script in existence
-        for _, v in ipairs(game:GetDescendants()) do
-            if v:IsA("LuaSourceContainer") then 
-                pcall(function() v:Destroy() end)
-            end
-        end
+	do
+		if IsModel then
+			header = header .. '<Meta name="ExplicitAutoJoints">true</Meta>'
+		end
+		if writefile and not OPTIONS.Callback then
+			writefile(placename, header)
+		end
+	end
 
-        -- 3. Blind the bytecode fetcher immediately
-        if getgenv().getscriptbytecode then 
-            getgenv().getscriptbytecode = function() return "" end 
-        end
-        
-        -- 4. Force settings so the saver doesn't look for what's gone
-        Options.Decompile = false
-        Options.SaveBytecode = false
-        Options.noscripts = true
-    end
+	-- Rest of save_game() continues normally...
+	SaveNotCreatableWillBeEnabled = SaveNotCreatable
+		or (IsolateLocalPlayer or IsolateLocalPlayerCharacter) and IsolateLocalPlayer
+		or IsolatePlayers
+		or NilInstances and global_container.getnilinstances
+
+	save_hierarchy(ToSaveList)
+	
+	-- ... rest of the function
+end
     -- [[ END KILL SWITCH ]]
 			if IsModel then
 				--[[
