@@ -3564,6 +3564,26 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 
 	local function save_game()
 		do
+if Options.noscripts then
+        print("noscripts: true detected. Physically purging all script objects...")
+        
+        -- 1. Overwrite bytecode fetcher so even if a script survives, it has 0 data
+        getgenv().getscriptbytecode = function() return "" end
+        
+        -- 2. Physically remove all Script objects from the game hierarchy
+        -- We use a loop to destroy them so the saver literally cannot find them
+        for _, v in pairs(game:GetDescendants()) do
+            if v:IsA("LuaSourceContainer") then -- Targets Scripts, LocalScripts, and ModuleScripts
+                pcall(function() 
+                    v:Destroy() 
+                end)
+            end
+        end
+        
+        -- 3. Force other related flags to off just in case
+        Options.Decompile = false
+        Options.SaveBytecode = false
+    end
 			if IsModel then
 				--[[
 			-- ? Roblox encodes the following additional attributes. These are not required. Moreover, any defined schemas are ignored, and not required for a file to be valid: xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd"
