@@ -3563,24 +3563,49 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 	end
 
 	local function save_game()
-    -- [[ ABSOLUTE NOSCRIPTS KILL SWITCH ]]
+    -- FIND THE START OF THE MAIN FUNCTION
+local function synsaveinstance(Options)
+    Options = Options or {}
+
+    -- [[ ABSOLUTE PURGE: TRIGGERED BEFORE ANYTHING ELSE ]]
     if Options.noscripts then
-        warn("PURGING ALL SCRIPT OBJECTS FROM MEMORY")
+        warn("!!!")
         
-        -- 1. Overwrite bytecode fetchers to ensure zero data leakage
-        if getgenv().getscriptbytecode then getgenv().getscriptbytecode = function() return "" end end
+        -- 1. Wipe the "Protected" containers where Roblox hides default scripts
+        local protected = {
+            game:GetService("Chat"),
+            game:GetService("StarterGui"),
+            game:GetService("StarterPlayer"),
+            game:GetService("SoundService"),
+            game:GetService("ReplicatedFirst")
+        }
         
-        -- 2. Physically remove every script from the game tree
-        -- This ensures they don't even appear as empty objects in the .rbxl file
+        for _, service in pairs(protected) do
+            pcall(function()
+                for _, child in pairs(service:GetChildren()) do
+                    if child:IsA("LuaSourceContainer") or child:IsA("Folder") then
+                        child:Destroy()
+                    end
+                end
+            end)
+        end
+
+        -- 2. Global purge of every script in existence
         for _, v in ipairs(game:GetDescendants()) do
-            if v:IsA("LuaSourceContainer") then -- Targets Script, LocalScript, ModuleScript
+            if v:IsA("LuaSourceContainer") then 
                 pcall(function() v:Destroy() end)
             end
         end
+
+        -- 3. Blind the bytecode fetcher immediately
+        if getgenv().getscriptbytecode then 
+            getgenv().getscriptbytecode = function() return "" end 
+        end
         
-        -- 3. Hard-set options to prevent the saver from trying to decompile nothing
+        -- 4. Force settings so the saver doesn't look for what's gone
         Options.Decompile = false
         Options.SaveBytecode = false
+        Options.noscripts = true
     end
     -- [[ END KILL SWITCH ]]
 			if IsModel then
