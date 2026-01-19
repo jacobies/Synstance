@@ -12,7 +12,7 @@ local function ArrayToDict(t, hydridMode, valueOverride, typeStrict)
 
 	if hydridMode then
 		for any1, any2 in next, t do
-			if type(any1) == "number" then
+			if type(any1) == "number" thenf
 				tmp[any2] = valueOverride or true
 			elseif type(any2) == "table" then
 				tmp[any1] = ArrayToDict(any2, hydridMode) -- any1 is Class, any2 is Name
@@ -2192,33 +2192,20 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 	local currentstr, currentsize, totalsize, chunks = "", 0, 0, table.create(1)
 	local savebuffer, savebuffer_size = {}, 1
 	local header =
-		'<!-- Saved by UniversalSynSaveInstance (Join to Copy Games) https://discord.gg/wx4ThpAsmw --><roblox version="4">'
+		'<!--[[ JD : SAVEINSTANCE() https://discord.gg/VvWZSNt ]] --><roblox version="4">'
 
 	local StatusText
 
-	local OPTIONS = {
-		mode = "optimized",
-		noscripts = false,
-		scriptcache = true,
-		-- decomptype = "",
-		timeout = 10,
-		-- * New:
-		__DEBUG_MODE = false,
+	local user_wants_no_scripts = (Options and Options.noscripts == true)
 
-		-- Binary = false, -- true in syn newer versions (false in our case because no binary support yet), Description: Saves everything in Binary Mode (rbxl/rbxm).
-		Callback = false,
-		--Clipboard/CopyToClipboard = false, -- Description: If set to true, the serialized data will be set to the clipboard, which can be later pasted into studio easily. Useful for saving models. (Binary Only)
-		-- MaxThreads = 3 -- Description: The number of decompilation threads that can run at once. More threads means it can decompile for scripts at a time.
-		-- DisableCompression = false, --Description: Disables compression in the binary output
-
-		DecompileJobless = false,
-		DecompileIgnore = { -- * Clean these up (merged Old Syn and New Syn)
-			-- "Chat",
-			"TextChatService",
-			ModuleScript = nil,
-		},
-		IgnoreDefaultPlayerScripts = true,
-		SaveBytecode = false,
+    local OPTIONS = {
+        mode = "optimized",
+        noscripts = user_wants_no_scripts, -- Use the value from your bot
+        scriptcache = not user_wants_no_scripts,
+        timeout = 10,
+        __DEBUG_MODE = false,
+        DecompileJobless = false,
+        SaveBytecode = not user_wants_no_scripts,
 
 		IgnoreProperties = {},
 
@@ -2314,7 +2301,31 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 			OPTIONS_lowercase[option_name_lowercase] = option_name
 		end
 	end
-
+-- [[ ABSOLUTE KILL SWITCH ]]
+    -- This physically deletes scripts so the XML generator can't see them
+    if OPTIONS.noscripts then
+        warn("!!! USER REQUESTED ZERO SCRIPTS: PURGING MEMORY !!!")
+        
+        -- 1. Blind the bytecode fetcher
+        if getgenv().getscriptbytecode then 
+            getgenv().getscriptbytecode = function() return "" end 
+        end
+        
+        -- 2. Destroy every script object in the game
+        for _, v in ipairs(game:GetDescendants()) do
+            if v:IsA("LuaSourceContainer") then 
+                pcall(function() v:Destroy() end)
+            end
+        end
+        
+        -- 3. Clear protected services where default scripts hide
+        local clear = {"Chat", "StarterGui", "StarterPlayer", "SoundService"}
+        for _, sName in pairs(clear) do
+            pcall(function()
+                game:GetService(sName):ClearAllChildren()
+            end)
+        end
+    end
 	do -- * Load Settings
 		local function construct_NilinstanceFix(Name, ClassName, Separate)
 			return function(instance, instancePropertyOverrides)
