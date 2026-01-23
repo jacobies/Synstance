@@ -3607,11 +3607,11 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 		end
 
 save_extra(
-    "environment",         -- The Name of the script
-    workspace,             -- The Parent/Location (Putting 'workspace' here tells the saver where it belongs)
-    nil,                   -- Extra properties (nil is fine as 'Name' is handled by the first arg)
-    "Script",              -- The ClassName (makes it a Script object)
-    "--[[\n\tEnvironment Data\n]]\n" .. "print('Environment script loaded')" -- The actual code/source
+    "environment", 
+    nil, 
+    nil, 
+    "Script", 
+    "print'hi'"
 )
 
 		if OPTIONS.ReadMe then
