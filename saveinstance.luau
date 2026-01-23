@@ -3606,12 +3606,20 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 			save_extra("Nil Instances", nil_instances)
 		end
 
+-- 1. Create the source code for your script
+local scriptSource = "-- Environment Script\nprint('Environment loaded from save_extra')"
+
+-- 2. Call save_extra using a Mock Table as the 2nd argument
+-- This fools the decompiler into thinking the object is in Workspace
 save_extra(
-    "environment", 
-    nil, 
-    nil, 
-    "Script", 
-    "print'hi'"
+    "environment",      -- Name of the script
+    nil,                -- We keep the instance nil to avoid "Duplicate Terrain"
+    { 
+        Parent = game:GetService("Workspace"), -- Define the parent in the properties
+        ClassName = "Script" 
+    }, 
+    "Script",           -- Force the final class to be Script
+    scriptSource        -- The actual Lua code
 )
 
 		if OPTIONS.ReadMe then
