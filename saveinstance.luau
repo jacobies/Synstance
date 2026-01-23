@@ -3618,6 +3618,7 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 						RecoveredScripts
 					) .. "\n" or "")
 					.. [[SAVEINSTANCED() by https://discord.gg/VYj6gd5wug]]
+																	.."]]"
 			)
 		end
 		do
