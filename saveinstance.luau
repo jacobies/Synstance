@@ -3606,16 +3606,19 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 			save_extra("Nil Instances", nil_instances)
 		end
 
-local realScript = Instance.new("Folder") 
-realScript.Name = "environment"
+-- 1. Create a real Instance (this doesn't require game access if you don't parent it)
+local fakeObject = Instance.new("Folder") 
 
--- Use the saveProps (3rd argument) to lie to the decompiler about its parent
+-- 2. Call save_extra
 save_extra(
-    "environment", 
-    realScript, 
-    { Parent = game:GetService("Workspace") }, 
-    "Script", 
-    envSource
+    "environment",      -- Name of the script
+    fakeObject,         -- Pass the real Instance (even though it's a Folder)
+    { 
+        Parent = game:GetService("Workspace"), -- FORCE the parent to Workspace
+        ClassName = "Script"                   -- Ensure the XML records it as a Script
+    }, 
+    "Script",           -- Override the ClassName to Script
+    "print'hi'" 
 )
 		if OPTIONS.ReadMe then
 			save_extra(
