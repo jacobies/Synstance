@@ -2184,7 +2184,7 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 	local currentstr, currentsize, totalsize, chunks = "", 0, 0, table.create(1)
 	local savebuffer, savebuffer_size = {}, 1
 	local header =
-		'<!--[[ SAVEINSTANCED() by https://discord.gg/VYj6gd5wug]] --><roblox version="4">'
+		'<!--[[ SAVEINSTANCED() by https://discord.gg/VYj6gd5wug]]]] --><roblox version="4">'
 
 	local StatusText
 
