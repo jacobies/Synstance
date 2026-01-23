@@ -3422,7 +3422,7 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 											end
 										end
 
-										value = "-- https://discord.gg/VYj6gd5wug\n\n"
+										value = "-- SAVEINSTANCED() by https://discord.gg/VYj6gd5wug\n\n"
 											.. (hasLinkedSource and "-- Original Source: https://assetdelivery.roblox.com/v1/asset/?" .. (LinkedSource_type or "id") .. "=" .. (LinkedSource or LinkedSource_Url) .. "\n\n" or "")
 											.. value
 									end
@@ -3606,18 +3606,10 @@ local function synsaveinstance(CustomOptions, CustomOptions2)
 			save_extra("Nil Instances", nil_instances)
 		end
 
-save_extra(
-    "environment", 
-    nil, 
-    { 
-        Parent = game:GetService("ServerScriptService") -- Moves it into a runnable container
-    }, 
-    "Script", 
-    "print('--------------------------')\nprint('ENVIRONMENT LOADED')\nprint('--------------------------')"
-)
+
 		if OPTIONS.ReadMe then
 			save_extra(
-				"README",
+				"SAVEINSTANCE()",
 				nil,
 				nil,
 				"Script",
@@ -3625,7 +3617,7 @@ save_extra(
 					.. (#RecoveredScripts ~= 0 and "\t\tIMPORTANT: Original Source of these Scripts was Recovered: " .. service.HttpService:JSONEncode(
 						RecoveredScripts
 					) .. "\n" or "")
-					.. [[https://discord.gg/VYj6gd5wug]]
+					.. [[SAVEINSTANCED() by https://discord.gg/VYj6gd5wug]]
 			)
 		end
 		do
